@@ -16,8 +16,8 @@ env/
 ENV/
 
 # ===== Данные (не храним в git — большие) =====
-data/raw/
-data/processed/
+data/raw/*
+data/processed/*
 *.zip
 *.tar
 *.tar.gz
