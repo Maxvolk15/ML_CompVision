@@ -1,0 +1,13 @@
+numpy
+pandas
+pyyaml
+matplotlib
+tqdm
+opencv-python
+albumentations
+# torch/torchvision: с PyPI ставится CPU-сборка. Для GPU ставьте CUDA-сборку
+torch>=2.1
+torchvision>=0.16
+ultralytics        # YOLOv8
+transformers       # DETR
+timm               # backbone для DETR

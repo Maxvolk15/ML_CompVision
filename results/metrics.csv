@@ -1,0 +1,6 @@
+model,mAP,mAP_50
+EfficientDet*,41.8,63.6
+Faster R-CNN,29.6,53.0
+SSD300,18.7,35.7
+YOLOv8n,14.4,26.2
+DETR-R50,1.1,2.6

@@ -1,0 +1,117 @@
+#  Конфигурация проекта: детектирование участников дорожного движения
+#  Задача — сравнение моделей детекции на 5 пользовательских классах.
+
+project:
+  name: road-users-detection
+  seed: 42
+  device: auto
+  num_workers: 0                 # 0 — безопасно на Windows (иначе WinError 1455: мал файл подкачки)
+  output_dir: results
+
+# ----------------------- Классы -----------------------------
+# 5 пользовательских классов участников дорожного движения.
+# Каждый класс собирается из категорий COCO (по их category_id).
+
+classes:
+  names: [пешеход, велосипедист, мотоциклист, легковой_авто, грузовой_авто]
+  # индекс_класса: [список COCO category_id]
+  coco_mapping:
+    0: [1]        # пешеход              <- person
+    1: [2]        # велосипедист         <- bicycle
+    2: [4]        # мотоциклист           <- motorcycle
+    3: [3]        # легковой авто  <- car
+    4: [6, 8]     # грузовой авто   <- bus, truck
+
+# ----------------------- Данные -----------------------------
+data:
+  name: coco
+  root: data/raw/coco
+  processed_dir: data/processed
+  train_images: data/raw/coco/images/train2017
+  val_images: data/raw/coco/images/val2017
+  train_ann: data/raw/coco/annotations/instances_train2017.json
+  val_ann: data/raw/coco/annotations/instances_val2017.json
+  num_classes: 5                 # число пользовательских классов
+  subset: 1000                   # число изображений для обучения (null = все)
+  split:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+
+# --------------------- Предобработка ------------------------
+preprocess:
+  img_size: 512                  # сторона входного изображения (меньше = быстрее локально)
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std:  [0.229, 0.224, 0.225]
+  augmentation:
+    enabled: true
+    horizontal_flip: 0.5
+    color_jitter: 0.3
+    random_crop: false
+
+# ----------------------- Обучение ---------------------------
+training:
+  epochs: 20
+  batch_size: 4
+  optimizer: sgd
+  lr: 0.005
+  weight_decay: 0.0005
+  momentum: 0.9
+  lr_scheduler: cosine
+  warmup_epochs: 1
+  grad_clip: 5.0
+  amp: true
+  early_stopping_patience: 5
+  checkpoint_dir: results/checkpoints
+  log_interval: 20
+
+# ----------------------- Оценка -----------------------------
+evaluation:
+  score_threshold: 0.05
+  nms_iou: 0.5
+  max_detections: 100
+  metrics: [mAP, mAP_50, precision, recall, f1]
+
+# ----------------------- Модели (все 5) ---------------------
+# Каждая выбирается через --model <key>. num_classes берётся из data.
+models:
+  yolo:
+    arch: yolov8n                # n — самая лёгкая версия, быстро учится
+    pretrained: true
+    img_size: 512
+  faster_rcnn:
+    backbone: resnet50_fpn
+    pretrained: true
+    img_size: 512
+  ssd:
+    arch: ssd300_vgg16
+    pretrained: true
+    img_size: 300
+  efficientdet:
+    arch: tf_efficientdet_d0
+    pretrained: true
+    img_size: 512
+  detr:
+    arch: facebook/detr-resnet-50
+    pretrained: true
+    img_size: 512
+    # DETR (трансформер): AdamW, малый lr, клиппинг 0.1, batch 2 (fp32 не влезает в 8 ГБ при batch 4).
+    train: {optimizer: adamw, lr: 0.0001, weight_decay: 0.0001, grad_clip: 0.1, batch_size: 2}
+
+
+compare:
+  models: [yolo, faster_rcnn, ssd, efficientdet, detr]
+
+# ------------------- Эксперименты с параметрами -------------
+# Углублённые эксперименты проводятся на 2 моделях (YOLO и Faster R-CNN):
+# каждый прогон переопределяет часть гиперпараметров. Запуск: python main.py experiment
+experiments:
+  yolo:
+    - {name: Y1_img416,   img_size: 416, lr: 0.01,   epochs: 20}
+    - {name: Y2_img512,   img_size: 512, lr: 0.01,   epochs: 20}
+    - {name: Y3_lowlr,    img_size: 512, lr: 0.001,  epochs: 20}
+  faster_rcnn:
+    - {name: F1_sgd,      optimizer: sgd,   lr: 0.005,  epochs: 15}
+    - {name: F2_adamw,    optimizer: adamw, lr: 0.0002, epochs: 15}
+    - {name: F3_lowlr,    optimizer: sgd,   lr: 0.001,  epochs: 15}

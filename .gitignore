@@ -1,0 +1,55 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+
+# ===== Виртуальные окружения =====
+.venv/
+venv/
+env/
+ENV/
+
+# ===== Данные (не храним в git — большие) =====
+data/raw/
+data/processed/
+*.zip
+*.tar
+*.tar.gz
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# ===== Веса моделей и чекпоинты =====
+*.pt
+*.pth
+*.onnx
+*.ckpt
+weights/
+checkpoints/
+runs/
+
+# ===== Результаты экспериментов =====
+results/logs/*
+results/plots/*.tmp
+!results/logs/.gitkeep
+results/predictions/
+results/yolo/
+results/Y*_*/
+
+# ===== Логи / временное =====
+*.log
+tensorboard/
+wandb/
+.DS_Store
+Thumbs.db
+
+# ===== IDE =====
+.idea/
+*.swp
+.vscode/*
+!.vscode/settings.json

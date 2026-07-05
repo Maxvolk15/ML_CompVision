@@ -1,0 +1,10 @@
+path: C:\Users\maxym\VSCode\ML_CompVision\data\raw\coco
+train: images/train2017
+val: images/val2017
+nc: 5
+names:
+  0: пешеход
+  1: велосипедист
+  2: мотоциклист
+  3: легковой_авто
+  4: грузовой_авто
